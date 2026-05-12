@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryptor</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; padding: 2.5rem 1rem; }
+  .container { max-width: 600px; margin: 0 auto; }
+  .panel { background: #fff; border: 1px solid #e0e0d8; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .field { margin-bottom: 1rem; }
+  label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
+  input[type="text"], input[type="password"], textarea {
+    width: 100%; font-family: monospace; font-size: 13px;
+    background: #fafaf8; border: 1px solid #ddd; border-radius: 7px;
+    padding: 9px 12px; color: #1a1a1a;
+  }
+  input[type="text"]:focus, input[type="password"]:focus, textarea:focus { outline: none; border-color: #999; background: #fff; }
+  textarea { resize: vertical; }
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 42px; }
+  .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 2px 4px; color: #aaa; font-size: 15px; line-height: 1; }
+  .pw-toggle:hover { color: #555; }
+  .btn { font-family: inherit; font-size: 14px; font-weight: 500; padding: 9px 22px; border-radius: 7px; border: 1px solid #ccc; background: #fff; color: #1a1a1a; cursor: pointer; transition: background 0.12s; }
+  .btn:hover { background: #f0f0eb; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .status-bar { font-size: 13px; padding: 9px 12px; border-radius: 7px; margin-top: 1rem; display: none; }
+  .status-bar.ok { background: #eaf6ec; color: #2a6b32; border: 1px solid #b6deba; }
+  .status-bar.err { background: #fceaea; color: #8b2020; border: 1px solid #f0baba; }
+  .status-bar.info { background: #eaf0fb; color: #1a3f7a; border: 1px solid #b5cef0; }
+  .output-box { background: #fafaf8; border: 1px solid #ddd; border-radius: 7px; padding: 12px; font-family: monospace; font-size: 12px; word-break: break-all; min-height: 60px; margin-top: 1rem; display: none; line-height: 1.6; }
+  .output-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .output-label { font-size: 13px; color: #666; }
+  .copy-btn { font-family: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid #ddd; background: transparent; color: #666; cursor: pointer; }
+  .copy-btn:hover { background: #f0f0eb; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1a1a1a; color: #e8e8e0; }
+    .panel { background: #242424; border-color: #333; }
+    input[type="text"], input[type="password"], textarea, .output-box { background: #2a2a2a; border-color: #3a3a3a; color: #e8e8e0; }
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus { background: #2e2e2e; }
+    .btn { background: #242424; border-color: #3a3a3a; color: #e8e8e0; }
+    .btn:hover { background: #2e2e2e; }
+    .copy-btn { color: #aaa; border-color: #3a3a3a; }
+    .copy-btn:hover { background: #2e2e2e; }
+    label, .output-label { color: #aaa; }
+    .pw-toggle { color: #666; }
+    .pw-toggle:hover { color: #aaa; }
+    .status-bar.ok { background: #1a2e1c; color: #6abf74; border-color: #2a5030; }
+    .status-bar.err { background: #2e1a1a; color: #e07070; border-color: #5a2a2a; }
+    .status-bar.info { background: #1a2040; color: #7090d0; border-color: #2a3560; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="panel">
+    <div class="field">
+      <label>Secret (base32)</label>
+      <div class="pw-wrap">
+        <input type="password" id="secret" placeholder="e.g. JBSWY3DPEHPK3PXP" autocomplete="off" />
+        <button type="button" class="pw-toggle" onclick="togglePw('secret','eye1')" id="eye1" aria-label="Show">&#128065;</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Encryption password" autocomplete="new-password" />
+        <button type="button" class="pw-toggle" onclick="togglePw('password','eye2')" id="eye2" aria-label="Show">&#128065;</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Confirm Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password2" placeholder="Confirm password" autocomplete="new-password" />
+        <button type="button" class="pw-toggle" onclick="togglePw('password2','eye3')" id="eye3" aria-label="Show">&#128065;</button>
+      </div>
+    </div>
+    <button class="btn" id="encrypt-btn" onclick="doEncrypt()">Encrypt</button>
+    <div class="status-bar" id="status"></div>
+    <div id="output-wrap" style="display:none">
+      <div class="output-header">
+        <span class="output-label">Encrypted output</span>
+        <button class="copy-btn" onclick="copyOutput()">Copy</button>
+      </div>
+      <div class="output-box" id="output-box" style="display:block"></div>
+    </div>
+  </div>
+</div>
+
+<script src="argon2-bundled.min.js"></script>
+<script>
+function togglePw(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '&#128064;';
+    btn.setAttribute('aria-label', 'Hide');
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '&#128065;';
+    btn.setAttribute('aria-label', 'Show');
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status-bar ' + type;
+  el.style.display = 'block';
+}
+
+function base32ToBytes(b32) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = 0, value = 0;
+  const output = [];
+  for (const char of b32.replace(/=+$/, '').toUpperCase()) {
+    const idx = alphabet.indexOf(char);
+    if (idx < 0) continue;
+    value = (value << 5) | idx;
+    bits += 5;
+    if (bits >= 8) { output.push((value >>> (bits - 8)) & 0xff); bits -= 8; }
+  }
+  return new Uint8Array(output);
+}
+
+function bytesToBase64(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+function padCounter(iv) {
+  // AES-CTR requires a 16-byte counter; pad 12-byte IV with 4 zero bytes
+  const counter = new Uint8Array(16);
+  counter.set(iv, 0);
+  return counter;
+}
+
+async function doEncrypt() {
+  const btn = document.getElementById('encrypt-btn');
+  const secretRaw = document.getElementById('secret').value.trim();
+  const pass = document.getElementById('password').value;
+  const pass2 = document.getElementById('password2').value;
+
+  if (!secretRaw) { showStatus('Enter your secret.', 'err'); return; }
+  if (!pass) { showStatus('Enter a password.', 'err'); return; }
+  if (pass !== pass2) { showStatus('Passwords do not match.', 'err'); return; }
+
+  // Validate base32
+  const secretBytes = base32ToBytes(secretRaw);
+  if (secretBytes.length === 0) { showStatus('Invalid base32 secret.', 'err'); return; }
+
+  btn.disabled = true;
+  showStatus('Deriving key…', 'info');
+
+  try {
+    // Generate random salt (16 bytes) and IV (12 bytes)
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    // Argon2id key derivation
+    const result = await argon2.hash({
+      pass, salt,
+      time: 2, mem: 19456, parallelism: 1, hashLen: 32,
+      type: argon2.ArgonType.Argon2id,
+    });
+
+    // Import key for AES-CTR
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw', result.hash, { name: 'AES-CTR' }, false, ['encrypt']
+    );
+
+    // Encrypt raw bytes (no authentication tag)
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-CTR', counter: padCounter(iv), length: 128 },
+      cryptoKey,
+      secretBytes
+    );
+
+    // Output: base64(salt + iv + ciphertext)
+    const cipherBytes = new Uint8Array(encrypted);
+    const combined = new Uint8Array(salt.length + iv.length + cipherBytes.length);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(cipherBytes, salt.length + iv.length);
+
+    const output = bytesToBase64(combined);
+    document.getElementById('output-box').textContent = output;
+    document.getElementById('output-wrap').style.display = 'block';
+    showStatus('Encrypted successfully.', 'ok');
+
+  } catch (e) {
+    showStatus('Error: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+}
+
+function copyOutput() {
+  const text = document.getElementById('output-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+  });
+}
+</script>
+</body>
+</html>

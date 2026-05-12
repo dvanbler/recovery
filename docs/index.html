@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Tools</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 480px; width: 100%; }
+
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .subtitle { font-size: 13px; color: #999; margin-bottom: 2rem; }
+
+  .tool-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #e0e0d8;
+    border-radius: 10px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .tool-link:hover {
+    border-color: #bbb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .tool-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #eaf0fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+
+  .tool-name { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .tool-desc { font-size: 13px; color: #888; }
+
+  .tool-link + .tool-link { margin-top: 12px; }
+
+  .arrow {
+    margin-left: auto;
+    color: #ccc;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .footer {
+    margin-top: 2rem;
+    font-size: 12px;
+    color: #bbb;
+    text-align: center;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body { background: #1a1a1a; color: #e8e8e0; }
+    .tool-link { background: #242424; border-color: #333; }
+    .tool-link:hover { border-color: #555; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .tool-icon { background: #1a2040; }
+    .tool-desc { color: #777; }
+    .arrow { color: #555; }
+    .footer { color: #555; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Recovery Tools</h1>
+  <p class="subtitle">Self-hosted, runs entirely in your browser</p>
+
+  <a class="tool-link" href="decryptor.html">
+    <div class="tool-icon">🔓</div>
+    <div>
+      <div class="tool-name">Decryptor</div>
+      <div class="tool-desc">Decrypt an encrypted base64 value using a password</div>
+    </div>
+    <div class="arrow">›</div>
+  </a>
+
+  <a class="tool-link" href="encryptor.html">
+    <div class="tool-icon">🔒</div>
+    <div>
+      <div class="tool-name">Encryptor</div>
+      <div class="tool-desc">Encrypt a value with a password to a base64 string</div>
+    </div>
+    <div class="arrow">›</div>
+  </a>
+
+  <p class="footer">All decryption happens locally. Nothing is sent to any server.</p>
+</div>
+</body>
+</html>
